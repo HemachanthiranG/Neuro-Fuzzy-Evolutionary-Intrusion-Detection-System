@@ -1,0 +1,33 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Data and artifacts (excluded per spec)
+data/raw/
+data/processed/
+models/
+results/
+
+# Credentials and environment secrets (NEVER commit)
+kaggle.json
+.kaggle/
+.env
+.env.*
+
+# Archives and scratch
+archive (2)/
+archive (2).zip
+scratch/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

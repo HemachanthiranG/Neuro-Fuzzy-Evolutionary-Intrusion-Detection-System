@@ -1,0 +1,227 @@
+# Configuration for Evolutionary Feature Selection with Neural Networks for NSL-KDD
+project_name: "Evolutionary Feature Selection with Neural Networks for Multi-Class Intrusion Detection"
+
+paths:
+  raw_train_path: "data/raw/KDDTrain+.txt"
+  raw_test_path: "data/raw/KDDTest+.txt"
+  processed_dir: "data/processed"
+  models_dir: "models"
+  results_dir: "results"
+  plots_dir: "results/plots"
+  confusion_matrices_dir: "results/confusion_matrices"
+
+data:
+  column_names:
+    - duration
+    - protocol_type
+    - service
+    - flag
+    - src_bytes
+    - dst_bytes
+    - land
+    - wrong_fragment
+    - urgent
+    - hot
+    - num_failed_logins
+    - logged_in
+    - num_compromised
+    - root_shell
+    - su_attempted
+    - num_root
+    - num_file_creations
+    - num_shells
+    - num_access_files
+    - num_outbound_cmds
+    - is_host_login
+    - is_guest_login
+    - count
+    - srv_count
+    - serror_rate
+    - srv_serror_rate
+    - rerror_rate
+    - srv_rerror_rate
+    - same_srv_rate
+    - diff_srv_rate
+    - srv_diff_host_rate
+    - dst_host_count
+    - dst_host_srv_count
+    - dst_host_same_srv_rate
+    - dst_host_diff_srv_rate
+    - dst_host_same_src_port_rate
+    - dst_host_srv_diff_host_rate
+    - dst_host_serror_rate
+    - dst_host_srv_serror_rate
+    - dst_host_rerror_rate
+    - dst_host_srv_rerror_rate
+    - label
+    - difficulty
+  categorical_features:
+    - protocol_type
+    - service
+    - flag
+  target_column: "label"
+  difficulty_column: "difficulty"
+  val_split_ratio: 0.20
+  scaler_type: "standard" # "standard" or "minmax"
+  classes:
+    - Normal
+    - DoS
+    - Probe
+    - R2L
+    - U2R
+  attack_mapping:
+    Normal:
+      - normal
+    DoS:
+      - back
+      - land
+      - neptune
+      - pod
+      - smurf
+      - teardrop
+      - apache2
+      - mailbomb
+      - processtable
+      - udpstorm
+      - worm
+    Probe:
+      - ipsweep
+      - nmap
+      - portsweep
+      - satan
+      - mscan
+      - saint
+    R2L:
+      - ftp_write
+      - guess_passwd
+      - imap
+      - multihop
+      - phf
+      - spy
+      - warezclient
+      - warezmaster
+      - sendmail
+      - named
+      - snmpgetattack
+      - snmpguess
+      - xlock
+      - xsnoop
+      - httptunnel
+    U2R:
+      - buffer_overflow
+      - loadmodule
+      - perl
+      - rootkit
+      - ptrace
+      - sqlattack
+      - xterm
+      - ps
+
+ann:
+  hidden_layers: [128, 64]
+  dropouts: [0.3, 0.2]
+  activations: ["relu", "relu"]
+  learning_rate: 0.001
+  batch_size: 128
+  epochs: 30
+  use_batch_norm: false
+  early_stopping_patience: 5
+  reduce_lr_patience: 3
+  reduce_lr_factor: 0.5
+  min_lr: 0.00001
+  use_class_weights: true
+
+ga:
+  chromosome_length: 41
+  population_size: 20
+  generations: 15
+  tournament_size: 3
+  crossover_rate: 0.8
+  mutation_rate: 0.02439 # 1/41
+  elitism_count: 2
+  alpha_penalty: 0.02
+  beta_penalty: 0.3 # penalty on False Positive Rate (FPR)
+  early_stopping_generations: 4
+  eval_subsample_ratio: 0.25
+  fast_ann_epochs: 4
+  fast_ann_batch_size: 256
+  use_fuzzy_controller: false
+  seed_informed_chromosomes: true
+
+fuzzy:
+  input_layer:
+    num_terms: 3 # 3 terms (Low, Medium, High) or 5 terms
+    input_mode: "concat" # "concat" (selected features + memberships) or "membership_only"
+    fcm_m: 2.0 # fuzziness coefficient
+    fcm_max_iter: 100
+    fcm_error: 0.0001
+    min_variance: 0.00001
+  adaptive_ga:
+    enabled: true
+    min_mutation_rate: 0.005
+    max_mutation_rate: 0.10
+    min_crossover_rate: 0.60
+    max_crossover_rate: 0.95
+    beta_penalty: 0.3
+    seed_informed_chromosomes: true
+  decision_layer:
+    enabled: true
+    beta_fpr_penalty: 0.30 # weight on validation FPR during suspicious band tuning
+    workload_penalty: 0.10 # penalty on analyst workload (% of records flagged) during band tuning
+    false_alarm_penalty: 0.30 # penalty on % of Normal flagged (false alarm rate) during band tuning
+    suspicious_band: [0.35, 0.65] # [low_cutoff, high_cutoff]
+    alert_levels:
+      - Normal
+      - Suspicious
+      - Attack
+    rules:
+      - "IF Confidence is High AND P(Normal) is High THEN Severity is Normal"
+      - "IF Confidence is Medium AND P(Normal) is High AND Entropy is Low THEN Severity is Normal"
+      - "IF Confidence is High AND P(Normal) is Low THEN Severity is Attack"
+      - "IF Confidence is Medium AND P(Normal) is Low AND Entropy is Low THEN Severity is Attack"
+      - "IF Confidence is Low AND Entropy is High THEN Severity is Suspicious"
+      - "IF Confidence is Medium AND Entropy is High THEN Severity is Suspicious"
+      - "IF P(Normal) is Medium THEN Severity is Suspicious"
+      - "IF Entropy is High THEN Severity is Suspicious"
+      - "IF Confidence is Medium AND P(Normal) is Low AND Entropy is Medium THEN Severity is Attack"
+
+execution_modes:
+  smoke:
+    seeds: [42]
+    ga:
+      population_size: 4
+      generations: 2
+      eval_subsample_ratio: 0.05
+      fast_ann_epochs: 2
+      fast_ann_batch_size: 256
+      early_stopping_generations: 2
+    ann:
+      epochs: 3
+      batch_size: 256
+    train_subsample: 0.10
+  fast:
+    seeds: [42, 123, 999]
+    ga:
+      population_size: 8
+      generations: 5
+      eval_subsample_ratio: 0.20
+      fast_ann_epochs: 3
+      fast_ann_batch_size: 256
+      early_stopping_generations: 3
+    ann:
+      epochs: 10
+      batch_size: 128
+    train_subsample: 1.0
+  full:
+    seeds: [42, 123, 999, 2024, 777]
+    ga:
+      population_size: 30
+      generations: 25
+      eval_subsample_ratio: 0.40
+      fast_ann_epochs: 4
+      fast_ann_batch_size: 256
+      early_stopping_generations: 6
+    ann:
+      epochs: 30
+      batch_size: 128
+    train_subsample: 1.0

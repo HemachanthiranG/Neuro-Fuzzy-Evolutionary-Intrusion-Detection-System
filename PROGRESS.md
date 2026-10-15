@@ -1,0 +1,25 @@
+# Project Progress Tracker
+
+### Core Phases (Phases 0 - 7)
+| Phase | Description | Status | Date | Notes |
+|---|---|---|---|---|
+| Phase 0 | Plan, project structure, venv, requirements.txt, config.yaml, .gitignore | PASSED | 2026-10-14 | Python 3.10.11 verified. .venv created, all dependencies installed and verified (TF 2.16.2, sklearn 1.5.2, pandas 2.3.3, etc.). |
+| Phase 1 | Dataset download + validation, loader, preprocessing, EDA outputs | PASSED | 2026-10-14 | KDDTrain+ (125,973 rows) and KDDTest+ (22,544 rows) validated. 41 features -> 122 encoded cols. Stratified 80/20 train/val split. Summary and plots generated. |
+| Phase 2 | ANN module + baseline ANN sanity run | PASSED | 2026-10-14 | Keras MLP built with Dropout/Adam/ReduceLROnPlateau/EarlyStopping/ClassWeights. Sanity run achieved 94.13% val acc, 76.16ms/1k latency, clean save/reload to .keras. |
+| Phase 3 | GA module + fast-mode single-seed run + convergence plot | PASSED | 2026-10-14 | Custom GA in pure Python/NumPy with tournament selection, uniform crossover, bit-flip mutation, repair, elitism, caching. Fast run (seed 42) reduced 41 features to 13 (68.3% reduction, best fitness 0.6426). |
+| Phase 4 | MI & RF baselines, evaluation, full experiment runner (fast mode) | PASSED | 2026-10-14 | All 4 models (Baseline ANN, GA+ANN, MI+ANN, RF+ANN) trained & evaluated. GA+ANN achieved 78.74% test attack detection rate vs 76.36% (Baseline) with 68.3% feature reduction. All CSV/JSON metrics and CMs generated. |
+| Phase 5 | Plots module | PASSED | 2026-10-14 | Full suite of 10 publication-quality static PNGs generated in results/plots/ and interactive Plotly figures prepared for Streamlit frontend. |
+| Phase 6 | Streamlit app (Results & Comparison, Predict tabs) | PASSED | 2026-10-14 | Modern dark-mode UI with hero header, KPI cards, benchmark tables, 10 Plotly diagnostics, and 3-mode real-time predictor verified live in browser. |
+| Phase 7 | Pytest tests, README, REPORT_NOTES.md, final summary | PASSED | 2026-10-14 | 6/6 pytest tests passing (100%). Comprehensive README.md and REPORT_NOTES.md created with zero hardcoded metrics and complete execution documentation. |
+
+### Fuzzy Logic Extension Phases (Phases F0 - F7)
+| Phase | Description | Status | Date | Notes |
+|---|---|---|---|---|
+| Phase F0 | Plan fuzzy extension, update config.yaml & src/config.py, regression test | PASSED | 2026-10-14 | Added fuzzy section (input layer, adaptive GA controller, decision layer, beta penalty), 5-seed full config, regression tested (6/6 tests passed). |
+| Phase F1 | src/fuzzy.py: FCM, Gaussian membership layer, preprocessor persistence, tests | PASSED | 2026-10-14 | 1D FCM and Gaussian membership layer implemented; fallback handles constant/binary features; serialized in preprocessor; 4/4 fuzzy tests + 6/6 regression tests pass. |
+| Phase F2 | Fuzzy-adaptive GA controller, improved fitness with FPR penalty, informed init | PASSED | 2026-10-14 | Implemented pure NumPy Mamdani FuzzyGAController with 9 rules; beta=0.3 on FPR; matched informed seeding; single-seed fast comparison ran; saved CSV histories, rules JSON, and comparison plot; leakage prevention tests pass. |
+| Phase F3 | Fuzzy decision layer tuned on validation only, tests | PASSED | 2026-10-14 | Implemented FuzzyDecisionLayer (confidence, prob_normal, entropy -> severity, 3-level alert, adjusted 5-class label); validation-only tuning with suspicious band optimization; exported combined fuzzy rules; 17/17 tests pass. |
+| Phase F4 | 8+1 ablation variants in run_experiments, Wilcoxon tests, win/loss table | PASSED | 2026-10-14 | Evaluated 9 ablation models (including Baseline+Fuzzy-decision); reported val_fpr and test_fpr for all retrained models; saved chosen suspicious band per seed; generated ablation_summary.csv, statistical_tests.json, win_loss_table.csv, and fuzzy_decision_stats.json; all 17 tests pass. |
+| Phase F5 | New plots (MF curves, adaptive GA, ablation bar, Pareto, decision scatter, recall heatmap) | PASSED | 2026-10-14 | All 6 required publication-quality figures at 300 DPI generated in results/plots/ (MF curves, GA convergence comparison, 9-model ablation bar, Pareto frontier, decision landscape & suspicious composition, per-class recall heatmap). |
+| Phase F6 | Streamlit updates (Ablation & Fuzzy Analysis in Results, fuzzy model in Predict) | PASSED | 2026-10-14 | Streamlit dashboard updated with Ablation & Fuzzy Analysis in Results tab (win/loss table, honest evaluation, 9-model ablation table, statistical tests, publication plot gallery, rule base explorer) and full neuro-fuzzy threat predictor in Predict tab (5-class label, 3-level alert, defuzzified severity score, key features fuzzy membership chart); verified live in browser across test sample, manual, and batch modes. |
+| Phase F7 | Update README and REPORT_NOTES.md, full pytest suite | PASSED | 2026-10-15 | Updated README.md and REPORT_NOTES.md with zero hand-typed metrics (all referencing saved result files); verified 18/18 pytest test suite passing cleanly (100%). |
